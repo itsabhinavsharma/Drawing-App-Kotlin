@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">DrawingApp</string>
+   <string name="brushSizeTxt">Brush Size</string>
+   <string name="brushSizeDisplayTxt">20</string>
+   <string name="brushSizeBtnTxt">BS</string>
+   <string name="colorSelectorBtnTxt">CS</string>
+   <string name="colorSelectorTvTxt">Color Selector</string>
+   <string name="brushIconMnTxt">Brush</string>
+</resources>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable-v24/blue_color_shape.xml" value="0.2115" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable-v24/fuchsia_color_shape.xml" value="0.2115" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable-v24/navy_color_shape.xml" value="0.2115" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable-v24/yellow_color_shape.xml" value="0.2115" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable/aqua_color_shape.xml" value="0.2115" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable/background_drwaing_view_layout.xml" value="0.218" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable/black_color_shape.xml" value="0.2115" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable/drawable_brush_size.xml" value="0.1015" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable/gray_color_shape.xml" value="0.2115" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable/green_color_shape.xml" value="0.2115" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable/lime_color_shape.xml" value="0.2115" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable/maroon_color_shape.xml" value="0.2115" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable/olive_color_shape.xml" value="0.2115" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable/purple_color_shape.xml" value="0.2115" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable/red_color_shape.xml" value="0.2115" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable/selected_color_shape.xml" value="0.2115" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable/silver_color_shape.xml" value="0.2115" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable/teal_color_shape.xml" value="0.2115" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable/white_color_shape.xml" value="0.218" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/layout-v23/activity_main.xml" value="0.20677083333333332" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/layout/activity_main.xml" value="0.2" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/layout/drawable_brush_size.xml" value="0.16965811965811967" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/layout/main_layout.xml" value="0.264" />
+        <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/menu/bottom_navigation_menu.xml" value="0.16965811965811967" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>
