@@ -110,6 +110,13 @@ class DrawingView(context: Context, attrs: AttributeSet): View(context, attrs){
       }
    }
 
+   fun onClickRedo(){
+      if(mUndoPaths.size > 0){
+         mPaths.add(mUndoPaths.removeAt(mUndoPaths.size - 1))
+         invalidate()
+      }
+   }
+
    internal inner class CustomPath(var color: Int,
                                    var brushThickness:Float): Path(){
 

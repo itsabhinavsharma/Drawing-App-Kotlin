@@ -4,11 +4,10 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.graphics.BlendMode
-import android.graphics.BlendModeColorFilter
-import android.graphics.Color
-import android.graphics.PorterDuff
+import android.content.pm.PackageManager
+import android.graphics.*
 import android.graphics.drawable.Drawable
+import android.media.Image
 import android.net.Uri
 import android.opengl.Visibility
 import android.os.Build
@@ -23,7 +22,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.slider.Slider
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.lang.Exception
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -35,6 +42,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
    private lateinit var ibColorSelect : ImageButton
    private lateinit var ibPickImageBtn : ImageButton
    private lateinit var ibUndoBtn : ImageButton
+   private lateinit var ibRedoBtn : ImageButton
+   private lateinit var ibSaveBtn : ImageButton
    private lateinit var tvBrushSize : TextView
    private lateinit var ivBackgroundImage : ImageView
 
@@ -97,6 +106,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
       ibColorSelect = findViewById(R.id.ib_colorSelectBtn)
       ibPickImageBtn = findViewById(R.id.ib_pickImageBtn)
       ibUndoBtn = findViewById(R.id.ib_undoBtn)
+      ibRedoBtn = findViewById(R.id.ib_redoBtn)
+      ibSaveBtn = findViewById(R.id.ib_saveBtn)
       tvBrushSize = findViewById(R.id.tv_brushSize)
       ivBackgroundImage = findViewById(R.id.iv_backgroundImage)
 
@@ -120,6 +131,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
       ibColorSelect.setOnClickListener(this)
       ibBrushSize.setOnClickListener(this)
       ibUndoBtn.setOnClickListener(this)
+      ibRedoBtn.setOnClickListener(this)
+      ibSaveBtn.setOnClickListener(this)
       sColorBlack.setOnClickListener(this)
       sColorWhite.setOnClickListener(this)
       sColorYellow.setOnClickListener(this)
@@ -173,6 +186,19 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
       drawingView?.onClickUndo()
    }
 
+   private fun ibRedoOnClick(){
+      drawingView?.onClickRedo()
+   }
+
+   private fun ibSaveOnClick(){
+      if(isReadPermissionAloud()){
+         lifecycleScope.launch {
+            val flDrawingView : FrameLayout = findViewById(R.id.fl_drawingView)
+            saveBitmapFile(getBitmapFromView(flDrawingView))
+         }
+      }
+   }
+
    private fun setBrushSize(){
       tvBrushSize.text = selectedBrushSize.toString()
       drawingView?.setBrushSize(selectedBrushSize.toFloat())
@@ -220,14 +246,24 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
       }
    }
 
+   private fun isReadPermissionAloud() : Boolean{
+      val result = ContextCompat.checkSelfPermission(this,
+         Manifest.permission.READ_EXTERNAL_STORAGE)
+
+      return result == PackageManager.PERMISSION_GRANTED
+   }
+
    private fun requestPermission() {
-      if(ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.READ_EXTERNAL_STORAGE)){
-         showRequestPermissionRationale("DrawingApp","Drawing App needs Permission"+
-         "to access Your Storage for setting Background Image")
+      if(ActivityCompat.shouldShowRequestPermissionRationale(this,
+            Manifest.permission.READ_EXTERNAL_STORAGE)){
+               showRequestPermissionRationale("DrawingApp",
+                  "Drawing App needs Permission"+
+                          "to access Your Storage for setting Background Image")
       }
 
       requestPermission.launch(arrayOf
-         (Manifest.permission.READ_EXTERNAL_STORAGE))
+         (Manifest.permission.READ_EXTERNAL_STORAGE,
+          Manifest.permission.WRITE_EXTERNAL_STORAGE))
    }
 
    private fun showRequestPermissionRationale(
@@ -241,6 +277,58 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             dialog.dismiss()
          }
       builder.create().show()
+   }
+
+   private fun getBitmapFromView(view : View): Bitmap{
+      val returnedBitmap = Bitmap.createBitmap(view.width,
+         view.height,Bitmap.Config.ARGB_8888)
+      val canvas = Canvas(returnedBitmap)
+      val bgDrawable = view.background
+      if(bgDrawable != null){
+         bgDrawable.draw(canvas)
+      }
+      else{
+         canvas.drawColor(Color.WHITE)
+      }
+      view.draw(canvas)
+      return returnedBitmap
+   }
+
+   private suspend fun saveBitmapFile(mBitmap : Bitmap?): String{
+      var result = ""
+      withContext(Dispatchers.IO){
+         if(mBitmap != null){
+            try{
+               var bytes = ByteArrayOutputStream()
+               mBitmap.compress(Bitmap.CompressFormat.PNG,100,bytes)
+
+               val file = File(externalCacheDir?.absoluteFile.toString()
+                       + File.separator + "DrawingApp" + System.currentTimeMillis() /1000 + ".png")
+
+               val fileOutputStream = FileOutputStream(file)
+               fileOutputStream.write(bytes.toByteArray())
+               fileOutputStream.close()
+
+               result = file.absolutePath
+
+               runOnUiThread{
+                  if(result.isNotEmpty()){
+                     Toast.makeText(this@MainActivity,
+                        "File Saved Successfully: $result",
+                        Toast.LENGTH_SHORT).show()
+                  }else{
+                     Toast.makeText(this@MainActivity,
+                     "Unable to save File",
+                     Toast.LENGTH_SHORT).show()
+                  }
+               }
+            }catch(e:Exception){
+               result = ""
+               e.printStackTrace()
+            }
+         }
+      }
+      return result
    }
 
 
@@ -262,6 +350,14 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
          R.id.ib_undoBtn -> {
             ibUndoOnClick()
+         }
+
+         R.id.ib_redoBtn -> {
+            ibRedoOnClick()
+         }
+
+         R.id.ib_saveBtn -> {
+            ibSaveOnClick()
          }
 
          R.id.s_colorBlack -> {

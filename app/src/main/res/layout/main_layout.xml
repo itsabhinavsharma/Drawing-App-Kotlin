@@ -428,7 +428,7 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:id="@+id/ib_undoBtn"
-            android:src="@drawable/undo_arrow"
+            android:src="@drawable/undo"
             android:scaleType="fitCenter"
             android:backgroundTint="@color/white"/>
 
@@ -436,6 +436,33 @@
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:layout_weight="1"/>
+
+         <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/ib_redoBtn"
+            android:src="@drawable/redo"
+            android:scaleType="fitCenter"
+            android:backgroundTint="@color/white"/>
+
+         <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"/>
+
+         <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/ib_saveBtn"
+            android:src="@drawable/save"
+            android:scaleType="fitCenter"
+            android:backgroundTint="@color/white"/>
+
+         <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"/>
+
       </LinearLayout>
    </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
