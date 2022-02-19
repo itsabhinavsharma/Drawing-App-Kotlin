@@ -84,16 +84,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
       registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){
          permissions ->
          permissions.forEach{
-            var permissionName = it.key
             var isGranted = it.value
 
             if(isGranted){
-               if(permissionName == Manifest.permission.READ_EXTERNAL_STORAGE)
-               {
-                  val intent = Intent(Intent.ACTION_PICK,
-                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                  openGalleryLauncher.launch(intent)
-               }
+               Toast.makeText(this,"Permission Granted!",Toast.LENGTH_SHORT)
             }
          }
       }
@@ -186,6 +180,18 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
    }
 
+   private fun ibPickImageOnClick(){
+      if(isReadPermissionAloud()){
+         val intent = Intent(Intent.ACTION_PICK,
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+         openGalleryLauncher.launch(intent)
+      }
+      else{
+         requestPermission()
+         ibPickImageOnClick()
+      }
+   }
+
    private fun ibUndoOnClick(){
       drawingView?.onClickUndo()
    }
@@ -196,6 +202,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
    private fun ibShareOnClick(){
       if(isReadPermissionAloud()){
+         showShareMenuDialog()
+      }
+      else{
+         requestPermission()
          showShareMenuDialog()
       }
    }
@@ -538,7 +548,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
          }
 
          R.id.ib_pickImageBtn -> {
-            requestPermission()
+            ibPickImageOnClick()
          }
 
          R.id.ib_undoBtn -> {
@@ -622,5 +632,4 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
          }
       }
    }
-
 }
