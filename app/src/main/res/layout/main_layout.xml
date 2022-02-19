@@ -453,8 +453,8 @@
          <ImageButton
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:id="@+id/ib_saveBtn"
-            android:src="@drawable/save"
+            android:id="@+id/ib_shareBtn"
+            android:src="@drawable/shareicon"
             android:scaleType="fitCenter"
             android:backgroundTint="@color/white"/>
 

@@ -2,34 +2,34 @@ package com.vinayakstudios.drawingapp
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
+import android.app.Dialog
+import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
-import android.graphics.drawable.Drawable
-import android.media.Image
+import android.media.MediaScannerConnection
 import android.net.Uri
-import android.opengl.Visibility
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.view.View
 import android.widget.*
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.slider.Slider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileOutputStream
+import java.io.*
+import java.io.File.separator
 import java.lang.Exception
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
@@ -43,9 +43,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
    private lateinit var ibPickImageBtn : ImageButton
    private lateinit var ibUndoBtn : ImageButton
    private lateinit var ibRedoBtn : ImageButton
-   private lateinit var ibSaveBtn : ImageButton
+   private lateinit var ibShareBtn : ImageButton
    private lateinit var tvBrushSize : TextView
    private lateinit var ivBackgroundImage : ImageView
+   private var tvSaveBtn : TextView? = null
+   private var tvShareBtn : TextView? = null
 
    private lateinit var sColorBlack : TextView
    private lateinit var sColorYellow : TextView
@@ -65,6 +67,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
    private var flBottomMenuDialogVisible : Boolean = false
    private var flColorSelectDialogVisible : Boolean = false
    private var longAnimationDuration : Int = 0
+   private var customProgressDialog : Dialog? = null
+   private var shareMenuDialog : Dialog? = null
 
    private var openGalleryLauncher : ActivityResultLauncher<Intent> =
       registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
@@ -107,7 +111,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
       ibPickImageBtn = findViewById(R.id.ib_pickImageBtn)
       ibUndoBtn = findViewById(R.id.ib_undoBtn)
       ibRedoBtn = findViewById(R.id.ib_redoBtn)
-      ibSaveBtn = findViewById(R.id.ib_saveBtn)
+      ibShareBtn = findViewById(R.id.ib_shareBtn)
       tvBrushSize = findViewById(R.id.tv_brushSize)
       ivBackgroundImage = findViewById(R.id.iv_backgroundImage)
 
@@ -132,7 +136,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
       ibBrushSize.setOnClickListener(this)
       ibUndoBtn.setOnClickListener(this)
       ibRedoBtn.setOnClickListener(this)
-      ibSaveBtn.setOnClickListener(this)
+      ibShareBtn.setOnClickListener(this)
       sColorBlack.setOnClickListener(this)
       sColorWhite.setOnClickListener(this)
       sColorYellow.setOnClickListener(this)
@@ -190,12 +194,27 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
       drawingView?.onClickRedo()
    }
 
-   private fun ibSaveOnClick(){
+   private fun ibShareOnClick(){
       if(isReadPermissionAloud()){
-         lifecycleScope.launch {
-            val flDrawingView : FrameLayout = findViewById(R.id.fl_drawingView)
-            saveBitmapFile(getBitmapFromView(flDrawingView))
-         }
+         showShareMenuDialog()
+      }
+   }
+
+   private fun tvSaveOnClick(){
+      cancelShareMenuDialog()
+      showProgressDialog()
+      lifecycleScope.launch {
+         val flDrawingView : FrameLayout = findViewById(R.id.fl_drawingView)
+         saveBitmapInSS(getBitmapFromView(flDrawingView))
+      }
+   }
+
+   private fun tvShareOnClick(){
+      cancelShareMenuDialog()
+      showProgressDialog()
+      lifecycleScope.launch {
+         val flDrawingView : FrameLayout = findViewById(R.id.fl_drawingView)
+         saveBitmapFile(getBitmapFromView(flDrawingView))
       }
    }
 
@@ -294,6 +313,132 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
       return returnedBitmap
    }
 
+   private suspend fun saveBitmapInSS(sBitmap : Bitmap?): Boolean {
+      var result: Boolean = false
+      var uri: Uri? = null
+      withContext(Dispatchers.IO) {
+         if (sBitmap != null) {
+            var imageCollection: Uri? = null
+
+            //var completeUri : Uri? = null
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+               imageCollection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+
+               val contentValues = addContentValues(sBitmap)
+               contentValues.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/DrawingApp")
+               contentValues.put(MediaStore.Images.Media.IS_PENDING, true)
+
+               try {
+                  if (imageCollection != null) {
+                     uri = contentResolver.insert(imageCollection, contentValues)
+                     if (uri != null) {
+                        saveImageInStream(sBitmap, contentResolver.openOutputStream(uri!!))
+                        contentValues.put(MediaStore.Images.Media.IS_PENDING, false)
+                        contentResolver.update(uri!!, contentValues, null, null)
+                     } else {
+                        throw IOException("Unable to store Image")
+                     }
+                     result = true
+                  } else {
+                     throw IOException("Couldn't find path to save file")
+                  }
+
+                  runOnUiThread {
+                     cancelProgressDialog()
+                     if (result == true) {
+                        Toast.makeText(
+                           this@MainActivity,
+                           "File Saved to Gallery",
+                           Toast.LENGTH_SHORT
+                        ).show()
+                     } else {
+                        Toast.makeText(
+                           this@MainActivity,
+                           "Unable to Save File",
+                           Toast.LENGTH_SHORT
+                        ).show()
+                     }
+                  }
+               } catch (e: IOException) {
+                  e.printStackTrace()
+                  result = false
+               }
+            } else {
+               imageCollection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+               val directory = File(
+                  Environment.getExternalStorageDirectory().toString()
+                          + separator + "DrawingApp"
+               )
+
+               if (!directory.exists()) {
+                  directory.mkdir()
+               }
+               val intSet = "0123456789"
+               val fileLastName = (1..7).map { (intSet.random()) }.joinToString("")
+               val fileName = "DrawingApp-$fileLastName.png"
+               val file = File(directory, fileName)
+
+               saveImageInStream(sBitmap, FileOutputStream(file))
+               if (file.absolutePath != null) {
+                  val contentValues = ContentValues().apply {
+                     put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
+                     put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+                     put(MediaStore.Images.Media.WIDTH, sBitmap.width)
+                     put(MediaStore.Images.Media.HEIGHT, sBitmap.height)
+                     put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000)
+                     put(MediaStore.Images.Media.DATA, file.absolutePath)
+                  }
+
+                  contentResolver.insert(imageCollection, contentValues)
+                  result = true
+
+                  runOnUiThread {
+                     if (result) {
+                        Toast.makeText(
+                           this@MainActivity,
+                           "File Saved to Gallery",
+                           Toast.LENGTH_SHORT
+                        ).show()
+                     } else {
+                        Toast.makeText(
+                           this@MainActivity,
+                           "Unable to Save File",
+                           Toast.LENGTH_SHORT
+                        ).show()
+                     }
+                  }
+               }
+            }
+         }
+      }
+      return result
+   }
+
+   private fun addContentValues(sBitmap : Bitmap): ContentValues{
+      val intSet = "0123456789"
+      val fileLastName = (1..7).map{(intSet.random())}.joinToString("")
+      val fileName = "DrawingApp-$fileLastName.png"
+      val contentValues = ContentValues().apply {
+         put(MediaStore.Images.Media.DISPLAY_NAME,fileName)
+         put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+         put(MediaStore.Images.Media.WIDTH, sBitmap.width)
+         put(MediaStore.Images.Media.HEIGHT, sBitmap.height)
+         put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis()/1000)
+      }
+      return contentValues
+   }
+
+   private fun saveImageInStream(sBitmap : Bitmap, outputStream : OutputStream?){
+      if(outputStream != null){
+         try{
+            sBitmap.compress(Bitmap.CompressFormat.PNG,100,outputStream)
+            outputStream.close()
+         }catch(e:Exception){
+            e.printStackTrace()
+         }
+      }
+   }
+
    private suspend fun saveBitmapFile(mBitmap : Bitmap?): String{
       var result = ""
       withContext(Dispatchers.IO){
@@ -302,7 +447,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                var bytes = ByteArrayOutputStream()
                mBitmap.compress(Bitmap.CompressFormat.PNG,100,bytes)
 
-               val file = File(externalCacheDir?.absoluteFile.toString()
+               val file = File(externalCacheDir?.absolutePath
                        + File.separator + "DrawingApp" + System.currentTimeMillis() /1000 + ".png")
 
                val fileOutputStream = FileOutputStream(file)
@@ -312,15 +457,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                result = file.absolutePath
 
                runOnUiThread{
-                  if(result.isNotEmpty()){
-                     Toast.makeText(this@MainActivity,
-                        "File Saved Successfully: $result",
-                        Toast.LENGTH_SHORT).show()
-                  }else{
-                     Toast.makeText(this@MainActivity,
-                     "Unable to save File",
-                     Toast.LENGTH_SHORT).show()
+                  cancelProgressDialog()
+                  if(file != null){
+                     shareImage(FileProvider.getUriForFile(this@MainActivity
+                     ,"com.vinayakstudios.drawingapp.fileprovider",file))
                   }
+                  else{
+                     Toast.makeText(this@MainActivity,
+                        "Unable to share",
+                        Toast.LENGTH_SHORT).show()
+                  }
+
                }
             }catch(e:Exception){
                result = ""
@@ -331,6 +478,52 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
       return result
    }
 
+   private fun shareImage(uri:Uri){
+
+      val shareIntent = Intent()
+      shareIntent.action = Intent.ACTION_SEND
+      shareIntent.putExtra(Intent.EXTRA_STREAM,uri)
+      shareIntent.type = "image/*"
+      startActivity(Intent.createChooser(shareIntent,"Share"))
+
+   }
+
+   private fun showProgressDialog(){
+
+      customProgressDialog = Dialog(this@MainActivity)
+
+      customProgressDialog?.setContentView(R.layout.dialog_custom_progress)
+
+      customProgressDialog?.show()
+   }
+
+   private fun cancelProgressDialog(){
+      if(customProgressDialog != null){
+         customProgressDialog!!.dismiss()
+         customProgressDialog = null
+      }
+   }
+
+   private fun showShareMenuDialog(){
+
+      shareMenuDialog = BottomSheetDialog(this)
+      val view = layoutInflater.inflate(R.layout.share_menu_dialog,null)
+      tvSaveBtn = view.findViewById(R.id.tv_SaveBtn)
+      tvShareBtn = view.findViewById(R.id.tv_shareBtn)
+      tvSaveBtn?.setOnClickListener(this)
+      tvShareBtn?.setOnClickListener(this)
+
+      shareMenuDialog?.setContentView(view)
+      shareMenuDialog?.show()
+
+   }
+
+   private fun cancelShareMenuDialog(){
+      if(shareMenuDialog != null){
+         shareMenuDialog?.dismiss()
+      }
+      shareMenuDialog = null
+   }
 
    override fun onClick(view: View?) {
 
@@ -356,8 +549,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             ibRedoOnClick()
          }
 
-         R.id.ib_saveBtn -> {
-            ibSaveOnClick()
+         R.id.ib_shareBtn -> {
+            ibShareOnClick()
+         }
+
+         R.id.tv_SaveBtn -> {
+            tvSaveOnClick()
+         }
+
+         R.id.tv_shareBtn -> {
+            tvShareOnClick()
          }
 
          R.id.s_colorBlack -> {

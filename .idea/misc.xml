@@ -3,7 +3,10 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/androidstudioprojects/DrawingApp/app/src/main/res/layout/activity_save_image_result.xml" value="0.16965811965811967" />
+        <entry key="..\:/androidstudioprojects/DrawingApp/app/src/main/res/layout/dialog_custom_progress.xml" value="0.16965811965811967" />
         <entry key="..\:/androidstudioprojects/DrawingApp/app/src/main/res/layout/main_layout.xml" value="0.16965811965811967" />
+        <entry key="..\:/androidstudioprojects/DrawingApp/app/src/main/res/layout/share_menu_dialog.xml" value="0.264" />
         <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable-v24/blue_color_shape.xml" value="0.2115" />
         <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable-v24/fuchsia_color_shape.xml" value="0.2115" />
         <entry key="..\:/androidstudioprojects/gettingstarted/DrawingApp/app/src/main/res/drawable-v24/navy_color_shape.xml" value="0.2115" />

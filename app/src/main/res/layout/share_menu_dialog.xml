@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools"
+   android:layout_width="match_parent"
+   android:layout_height="match_parent"
+   xmlns:app="http://schemas.android.com/apk/res-auto"
+   android:orientation="vertical"
+   android:gravity="bottom">
+   <FrameLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      tools:ignore="UselessParent">
+
+      <LinearLayout
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:orientation="vertical"
+         tools:ignore="UselessParent">
+
+         <TextView
+            android:id="@+id/tv_SaveBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/saveTxtBtn"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:padding="15dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:drawablePadding="15dp"
+            app:drawableStartCompat="@drawable/smartphoneone" />
+
+         <TextView
+            android:id="@+id/tv_shareBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/share_btn_txt"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:padding="15dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:drawablePadding="15dp"
+            app:drawableStartCompat="@drawable/shareiconpopup" />
+      </LinearLayout>
+   </FrameLayout>
+
+</LinearLayout>
